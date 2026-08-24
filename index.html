@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ezzedin Ahmed — Software engineer</title>
+<meta name="description" content="Software engineer. Say hello, or find my work on GitHub and LinkedIn." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ── tokens: warm phosphor, not clinical ────────────────────────── */
+:root{
+  --ground:#f0e8da;
+  --panel:#fbf6ed;
+  --frame:rgba(74,54,28,.22);
+  --frame-soft:rgba(74,54,28,.10);
+  --text:#2a2119;
+  --dim:#6a5b49;
+  --amber:#a1550a;
+  --amber-wash:rgba(161,85,10,.10);
+  --green:#3d7429;
+  --red:#ab3c26;
+  --glow:transparent;
+
+  --indent:1.2rem;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#100e0b;
+    --panel:#1a1713;
+    --frame:rgba(240,200,140,.20);
+    --frame-soft:rgba(240,200,140,.09);
+    --text:#ece3d5;
+    --dim:#a99c8b;
+    --amber:#f0a93c;
+    --amber-wash:rgba(240,169,60,.13);
+    --green:#93c46b;
+    --red:#ef8a6e;
+    --glow:rgba(240,169,60,.055);
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  min-height:100vh;
+  background:var(--ground);
+  background-image:radial-gradient(120% 80% at 50% 0%,var(--glow),transparent 70%);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14.5px;
+  line-height:1.75;
+  padding:clamp(16px,5vw,64px) clamp(12px,4vw,32px);
+}
+::selection{background:var(--amber);color:var(--panel)}
+
+/* ── the window ─────────────────────────────────────────────────── */
+.term{
+  max-width:800px;margin:0 auto;
+  background:var(--panel);
+  border:1px solid var(--frame);
+  border-radius:8px;
+  box-shadow:0 24px 70px -34px rgba(0,0,0,.55);
+  overflow:hidden;
+}
+.bar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:11px clamp(14px,3vw,22px);
+  border-bottom:1px solid var(--frame-soft);
+  font-size:12.5px;color:var(--dim);
+}
+.bar .host{color:var(--amber)}
+.bar-r{display:flex;align-items:center;gap:9px;white-space:nowrap}
+.dot{
+  width:7px;height:7px;border-radius:50%;background:var(--green);
+  animation:pulse 3s var(--ease) infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.screen{padding:clamp(18px,4vw,30px) clamp(14px,3vw,26px) clamp(22px,4vw,30px)}
+
+/* ── prompt blocks ──────────────────────────────────────────────── */
+.block + .block{margin-top:26px}
+.cmd{margin:0;color:var(--text);font-weight:500}
+.cmd .p{color:var(--amber);margin-right:.6ch;user-select:none}
+.cmdline{
+  font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;
+  cursor:pointer;text-align:left;
+}
+.cmdline:disabled{cursor:default;color:inherit;opacity:1}
+/* focus we moved here ourselves — the caret is the indicator, not a ring */
+.cmdline.quiet:focus-visible{outline:none}
+.cmdhint{margin-left:2.5ch;color:var(--dim);opacity:.75;font-size:12.5px;font-weight:400}
+.cmdhint[hidden]{display:none}
+.cmd .typed{
+  display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;
+  width:calc(var(--n) * 1ch);
+}
+.out{margin:2px 0 0;padding-left:var(--indent);color:var(--dim);max-width:66ch}
+.out.para + .out.para{margin-top:.85em}
+.out strong{color:var(--text);font-weight:500}
+.out.who{color:var(--text);font-size:20px;font-weight:600;letter-spacing:-.01em;line-height:1.4}
+
+/* ── links listing ──────────────────────────────────────────────── */
+.links{list-style:none;margin:4px 0 0;padding:0 0 0 var(--indent)}
+.links a{
+  display:flex;gap:1.5ch;align-items:baseline;flex-wrap:wrap;
+  padding:3px 0;color:var(--text);text-decoration:none;width:fit-content;
+  border-bottom:1px solid transparent;
+}
+.links a:hover,.links a:focus-visible{color:var(--amber);border-bottom-color:var(--amber)}
+.links .key{color:var(--amber);min-width:10ch}
+.links .val{color:var(--dim)}
+.links a:hover .key,.links a:focus-visible .key,
+.links a:hover .val,.links a:focus-visible .val{color:inherit}
+
+/* ── the prompt sequence ────────────────────────────────────────── */
+form{margin:6px 0 0;padding-left:var(--indent)}
+.step{
+  display:grid;grid-template-columns:2ch 10ch minmax(0,1fr);gap:0 1ch;
+  align-items:baseline;
+  padding:5px 9px 5px 7px;margin-left:-9px;
+  border-left:2px solid transparent;border-radius:3px;
+  transition:background .18s var(--ease),border-color .18s var(--ease);
+}
+.step[hidden]{display:none}
+.step:focus-within{background:var(--amber-wash);border-left-color:var(--amber)}
+.mark{color:var(--amber);user-select:none}
+.mark::before{content:"?"}
+.step[data-done="true"] .mark{color:var(--green)}
+.step[data-done="true"] .mark::before{content:"✓"}
+.step > label,.step > .label{color:var(--amber)}
+.step[data-done="true"] > label,.step[data-done="true"] > .label{color:var(--dim)}
+.step input,.step textarea{
+  font:inherit;color:var(--text);
+  background:transparent;border:0;padding:0;width:100%;resize:none;
+}
+.step input:focus,.step textarea:focus{outline:none}
+.step input::placeholder,.step textarea::placeholder{color:var(--dim);opacity:.7}
+.step textarea{min-height:3.5em;line-height:1.75}
+.hint{grid-column:3;color:var(--dim);opacity:.75;font-size:12.5px;margin:1px 0 0}
+.hint[hidden]{display:none}
+.step[data-done="true"] .hint{display:none}
+.err{grid-column:3;color:var(--red);font-size:13px;margin:2px 0 0}
+.err::before{content:"! "}
+.err a{color:inherit}
+.step[data-invalid="true"]{border-left-color:var(--red)}
+
+.opts{display:flex;flex-wrap:wrap;gap:1.5ch}
+.opts input{position:absolute;opacity:0;pointer-events:none}
+.opts label{cursor:pointer;color:var(--dim);transition:color .18s var(--ease)}
+.opts label::before{content:"[ ";color:var(--dim);opacity:.55}
+.opts label::after{content:" ]";color:var(--dim);opacity:.55}
+.opts label:hover{color:var(--amber)}
+.opts input:checked + label,
+.opts input:checked + label::before,
+.opts input:checked + label::after{color:var(--amber);opacity:1}
+.opts input:focus-visible + label{outline:2px solid var(--amber);outline-offset:3px;border-radius:2px}
+
+.run{
+  font:inherit;font-weight:500;
+  margin:10px 0 0 -1px;padding:5px 12px;
+  background:transparent;color:var(--amber);
+  border:1px solid var(--frame);border-radius:3px;
+  cursor:pointer;
+  transition:background .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease);
+}
+.run:hover{background:var(--amber);color:var(--panel);border-color:var(--amber)}
+.run:disabled{opacity:.5;cursor:progress;background:transparent;color:var(--amber)}
+.run[hidden]{display:none}
+
+.reply{padding-left:var(--indent);margin:6px 0 0;color:var(--green)}
+.reply::before{content:"→ "}
+[hidden]{display:none !important}
+
+/* ── the shell comes back when the session ends ─────────────────── */
+.tail{margin:26px 0 0;color:var(--amber)}
+.caret{
+  display:inline-block;width:1ch;height:1.05em;vertical-align:-.15em;
+  background:var(--amber);margin-left:.6ch;
+  animation:blink 1.15s steps(1) infinite;
+}
+@keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+
+:where(a,button,input,textarea,label):focus-visible{
+  outline:2px solid var(--amber);outline-offset:3px;border-radius:2px;
+}
+
+/* ── typed page load ────────────────────────────────────────────── */
+@keyframes type{from{width:0}}
+@keyframes surface{from{opacity:0;transform:translateY(3px)}}
+.cmd .typed{animation:type .3s steps(var(--n)) backwards}
+.reveal{animation:surface .3s var(--ease) backwards}
+/* steps appear on their own clock, not the page-load timeline */
+.pop{animation:surface .16s var(--ease)}
+.b1 .typed{animation-delay:.15s}   .b1 .reveal{animation-delay:.48s}
+.b2 .typed{animation-delay:.62s}   .b2 .reveal{animation-delay:.95s}
+.b3 .typed{animation-delay:1.09s}  .b3 .reveal{animation-delay:1.42s}
+.b4 .typed{animation-delay:1.56s}  .b4 .reveal{animation-delay:1.89s}
+
+@media (max-width:600px){
+  body{font-size:13.5px}
+  .step{grid-template-columns:2ch minmax(0,1fr);gap:0 1ch}
+  .step > label,.step > .label{grid-column:2}
+  .step input,.step textarea,.step .opts,.hint,.err{grid-column:2}
+  .out.who{font-size:18px}
+  .bar{font-size:11.5px}
+  .links .key{min-width:9ch}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition-duration:.001ms !important}
+  .cmd .typed{width:auto}
+  .caret{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<main class="term">
+  <header class="bar">
+    <span><span class="host">ezzedin</span>:~</span>
+    <span class="bar-r"><span class="dot" aria-hidden="true"></span> open to work</span>
+  </header>
+
+  <div class="screen">
+
+    <section class="block b1">
+      <p class="cmd"><span class="p">$</span><span class="typed" style="--n:6">whoami</span></p>
+      <p class="out who reveal">Ezzedin Ahmed</p>
+      <p class="out reveal">software engineer</p>
+    </section>
+
+    <section class="block b2">
+      <p class="cmd"><span class="p">$</span><span class="typed" style="--n:13">cat about.txt</span></p>
+      <p class="out para reveal">Backend software engineer focused on building reliable, real-time systems and AI-powered products. I enjoy working on the problems that emerge at scale—<strong>concurrency</strong>, <strong>reliability</strong>, <strong>latency</strong>, and <strong>failure recovery</strong>.</p>
+      <p class="out para reveal">I’ve built systems for <strong>real-time AI agents</strong>, event-driven platforms, and live communication, including infrastructure handling up to <strong>10K concurrent sessions</strong> and <strong>100K events per second</strong>.</p>
+      <p class="out para reveal">I mainly work with <strong>Java</strong>, <strong>Python</strong>, <strong>Go</strong> and <strong>Rust</strong>, and I’m particularly interested in <strong>distributed systems</strong> and the engineering behind dependable AI products.</p>
+    </section>
+
+    <section class="block b3">
+      <p class="cmd"><span class="p">$</span><span class="typed" style="--n:9">ls links/</span></p>
+      <ul class="links reveal">
+        <li><a href="mailto:ezzedin.a.ahmed@gmail.com"><span class="key">email</span><span class="val">ezzedin.a.ahmed@gmail.com</span></a></li>
+        <li><a href="https://github.com/ezzedin-ahmed" rel="me"><span class="key">github</span><span class="val">github.com/ezzedin-ahmed ↗</span></a></li>
+        <li><a href="https://www.linkedin.com/in/ezzedin-ahmed" rel="me"><span class="key">linkedin</span><span class="val">linkedin.com/in/ezzedin-ahmed ↗</span></a></li>
+      </ul>
+    </section>
+
+    <section class="block b4">
+      <p class="cmd">
+        <span class="p">$</span><button type="button" class="cmdline" id="run-mail"><span class="typed" style="--n:17">mail --to ezzedin</span><span class="caret" id="run-caret"></span></button><span class="cmdhint reveal" id="run-hint">press enter to run</span>
+      </p>
+
+      <form id="contact" novalidate hidden>
+        <div class="step" data-step="name" hidden>
+          <span class="mark" aria-hidden="true"></span>
+          <label for="f-name">name</label>
+          <input id="f-name" name="name" type="text" autocomplete="name" placeholder="your name" required />
+          <p class="hint">press enter to continue</p>
+        </div>
+
+        <div class="step" data-step="email" hidden>
+          <span class="mark" aria-hidden="true"></span>
+          <label for="f-email">email</label>
+          <input id="f-email" name="email" type="email" autocomplete="email" placeholder="where to reply" required />
+          <p class="hint" hidden>press enter to continue</p>
+        </div>
+
+        <div class="step" data-step="topic" role="radiogroup" aria-labelledby="topic-label" hidden>
+          <span class="mark" aria-hidden="true"></span>
+          <span class="label" id="topic-label">topic</span>
+          <div class="opts">
+            <input type="radio" id="t-work" name="topic" autocomplete="off" value="work" checked /><label for="t-work">work</label>
+            <input type="radio" id="t-q" name="topic" autocomplete="off" value="a question" /><label for="t-q">a question</label>
+            <input type="radio" id="t-other" name="topic" autocomplete="off" value="something else" /><label for="t-other">something else</label>
+          </div>
+          <p class="hint" hidden>arrow keys to choose · enter to continue</p>
+        </div>
+
+        <div class="step" data-step="message" hidden>
+          <span class="mark" aria-hidden="true"></span>
+          <label for="f-message">message</label>
+          <textarea id="f-message" name="message" autocomplete="off" placeholder="whatever you'd like to say" required></textarea>
+          <p class="hint" hidden>⏎ for a new line</p>
+        </div>
+
+        <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" hidden />
+        <button class="run" type="submit" hidden>[ send ]</button>
+      </form>
+
+      <p class="reply" id="reply" role="status" hidden></p>
+    </section>
+
+    <p class="tail" id="tail" aria-hidden="true" hidden>$<span class="caret"></span></p>
+  </div>
+</main>
+
+<script>
+const INBOX = "ezzedin.a.ahmed@gmail.com";
+// FormSubmit relays the form to INBOX. The first submission triggers a
+// one-time confirmation email — click the link in it to activate the form.
+const ENDPOINT = `https://formsubmit.co/ajax/${INBOX}`;
+
+const form = document.getElementById("contact");
+const reply = document.getElementById("reply");
+const tail = document.getElementById("tail");
+const button = form.querySelector(".run");
+
+const screenEl = document.querySelector(".screen");
+const priorOutput = [...document.querySelectorAll(".block")].filter((b) => b !== document.querySelector(".b4"));
+const runMail = document.getElementById("run-mail");
+const runCaret = document.getElementById("run-caret");
+const runHint = document.getElementById("run-hint");
+let started = false;
+let begun = false;
+let finished = false;
+
+const ORDER = ["name", "email", "topic", "message"];
+const stepOf = (name) => form.querySelector(`[data-step="${name}"]`);
+const inputOf = (name) => stepOf(name).querySelector("input, textarea");
+let reached = 0;
+
+/* one question at a time — each stays editable once it has been asked */
+function reveal(index) {
+  if (index >= ORDER.length) { button.hidden = false; button.focus(); return; }
+  const step = stepOf(ORDER[index]);
+  if (step.hidden) { step.hidden = false; step.classList.add("pop"); }
+  step.querySelector(".hint").hidden = false;
+  inputOf(ORDER[index]).focus();
+  if (index === ORDER.length - 1) button.hidden = false;
+}
+
+/* the terminal keeps its size once cleared, the way a real one does */
+function holdHeight() {
+  if (screenEl.style.minHeight) return;
+  screenEl.style.minHeight =
+    Math.min(screenEl.offsetHeight, window.innerHeight * 0.7) + "px";
+}
+
+const clearScreen = () => priorOutput.forEach((b) => { b.hidden = true; });
+const restoreScreen = () => priorOutput.forEach((b) => {
+  b.hidden = false;
+  b.classList.add("pop");
+});
+
+const typedSomething = () =>
+  ORDER.some((n) => n !== "topic" && inputOf(n).value.trim() !== "");
+
+/* nothing is asked until the command is actually run */
+function start() {
+  if (started || finished) return;
+  started = true;
+  holdHeight();
+  clearScreen();
+  form.hidden = false;
+  runMail.disabled = true;
+  runCaret.hidden = true;
+  runHint.textContent = "ctrl+c to cancel";
+  reply.hidden = true;
+  tail.hidden = true;
+  if (!begun) { begun = true; clearDraft(); reveal(0); }
+  else focusFirstUnanswered();
+}
+
+function focusFirstUnanswered() {
+  const next = ORDER.find((n) => !stepOf(n).hidden && stepOf(n).dataset.done !== "true");
+  inputOf(next || ORDER[ORDER.length - 1]).focus();
+}
+
+/* topic and message are per-message; name and email are worth keeping */
+function clearDraft() {
+  inputOf("message").value = "";
+  form.querySelector('input[name="topic"]').checked = true;
+  ["topic", "message"].forEach((n) => {
+    stepOf(n).removeAttribute("data-done");
+    setError(n, "");
+  });
+  button.textContent = "[ send ]";
+  button.disabled = false;
+}
+
+/* ctrl+c drops the session and puts the earlier output back */
+function cancel() {
+  if (!started) return;
+  started = false;
+  form.hidden = true;
+  restoreScreen();
+  runMail.disabled = false;
+  runCaret.hidden = false;
+  runHint.textContent = typedSomething() ? "press enter to resume" : "press enter to run";
+  focusQuietly(runMail);
+}
+
+/* a ring belongs to focus the visitor asked for, not focus we restored */
+function focusQuietly(el) {
+  el.classList.add("quiet");
+  el.focus();
+}
+runMail.addEventListener("blur", () => runMail.classList.remove("quiet"));
+
+/* never steal ctrl+c from an actual copy */
+function hasSelection() {
+  const el = document.activeElement;
+  if (el && /^(INPUT|TEXTAREA)$/.test(el.tagName) && el.selectionStart !== el.selectionEnd) return true;
+  return !window.getSelection().isCollapsed;
+}
+
+runMail.addEventListener("click", start);
+document.addEventListener("keydown", (e) => {
+  if (!started) {
+    if (e.key !== "Enter") return;
+    if (e.target !== document.body && e.target !== runMail) return;
+    e.preventDefault();
+    start();
+    return;
+  }
+  const ctrlC = (e.key === "c" || e.key === "C") && e.ctrlKey && !e.metaKey;
+  if (!ctrlC && e.key !== "Escape") return;
+  if (ctrlC && hasSelection()) return;
+  e.preventDefault();
+  cancel();
+});
+
+/* once the load sequence has played, drop its delays so a restore is instant */
+setTimeout(() => {
+  document.querySelectorAll(".reveal").forEach((el) => el.classList.remove("reveal"));
+}, 2300);
+
+function setError(name, message, mailto) {
+  const step = stepOf(name);
+  step.querySelector(".err")?.remove();
+  if (!message) { step.removeAttribute("data-invalid"); return; }
+  step.dataset.invalid = "true";
+  const p = document.createElement("p");
+  p.className = "err";
+  if (mailto) {
+    p.append("that didn't go through — email ");
+    const a = document.createElement("a");
+    a.href = `mailto:${mailto}`;
+    a.textContent = mailto;
+    p.append(a, " instead");
+  } else {
+    p.textContent = message;
+  }
+  step.appendChild(p);
+}
+
+const CHECKS = {
+  name: (v) => v.trim() ? "" : "add a name so i know who to reply to",
+  email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+    ? "" : "that address looks off — check the spelling",
+  topic: () => "",
+  message: (v) => v.trim().length >= 10 ? "" : "add a sentence or two"
+};
+
+function answer(index, move = true) {
+  const name = ORDER[index];
+  const problem = CHECKS[name](new FormData(form).get(name) || "");
+  setError(name, problem);
+  if (problem) { inputOf(name).focus(); return false; }
+  stepOf(name).dataset.done = "true";
+  if (index === reached) reached = index + 1;
+  if (move) reveal(index + 1);
+  return true;
+}
+
+/* ⏎ answers the current question; in the message box it stays a newline */
+form.addEventListener("keydown", (e) => {
+  if (!started || e.key !== "Enter") return;
+  const step = e.target.closest(".step");
+  if (!step) return;
+  const index = ORDER.indexOf(step.dataset.step);
+  if (step.dataset.step === "message" && !(e.metaKey || e.ctrlKey)) return;
+  e.preventDefault();
+  if (step.dataset.step === "message") { form.requestSubmit(); return; }
+  answer(index);
+});
+
+form.addEventListener("input", (e) => {
+  const step = e.target.closest(".step");
+  if (step) setError(step.dataset.step, "");
+});
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  for (let i = 0; i < ORDER.length; i++) if (!answer(i, false)) return;
+
+  const data = Object.fromEntries(new FormData(form));
+
+  button.disabled = true;
+  button.textContent = "[ sending ]";
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        ...data,
+        _subject: `[${data.topic}] ${data.name}`,
+        _template: "table",
+        _captcha: "false"
+      })
+    });
+    if (!res.ok) throw new Error(res.status);
+    finish(`message sent. i'll reply to ${data.email} soon.`);
+  } catch {
+    button.disabled = false;
+    button.textContent = "[ send ]";
+    setError("message", `that didn't go through — email ${INBOX} instead`, INBOX);
+  }
+});
+
+function finish(line) {
+  started = false;
+  finished = true;
+  form.hidden = true;
+  restoreScreen();
+  reply.hidden = false;
+  reply.textContent = line;
+  tail.hidden = false;
+  runCaret.hidden = true;
+  runHint.hidden = true;
+  clearDraft();
+}
+
+/* A refresh must not resurrect the last draft. pageshow fires after `load`,
+   which waits on the webfont — so guard it, or a slow load would wipe a
+   message the visitor is already typing. start() clears again for the same
+   reason: whenever the browser restores values, a fresh session begins empty. */
+window.addEventListener("pageshow", () => { if (!begun) clearDraft(); });
+clearDraft();
+
+/* the message box hint depends on the platform's send chord */
+const isMac = /Mac|iPhone|iPad/.test(navigator.userAgent);
+stepOf("message").querySelector(".hint").textContent =
+  `enter for a new line · ${isMac ? "cmd" : "ctrl"}+enter to send`;
+</script>
+</body>
+</html>
